@@ -1,32 +1,37 @@
 package ru.geekbrains.lessons;
 
 public class Dog extends Animal{
-    static int boarderToSwim = 10; // max to swim for dogs
-    static int boarderToRun = 500; // max to run for dogs
-    static int counterRun = 0; // counter of running dogs
-    static int counterSwim = 0; // counter of running cats
+    private static final int boarderToSwim = 10; // max to swim for dogs
+    private static final int boarderToRun = 500; // max to run for dogs
+    int counterRun = 0; // counter of running dogs
+    int counterSwim = 0; // counter of running cats
+    int lengthRun; // cat's run distance
+    int lengthSwim; // cat's swim distance
 
-    //@Override, без коммента почему то не работает, Идея пишет, что этот метод не переопределяет метод из суперкласса
-    protected static void animalRun(String name, int length) {
-        if (boarderToRun > length) {
-            System.out.println(name + " ran " + length + "m");
-            counterRun++;
-        }
-        else {
-            System.out.println("It is very big distance, make it shorter.");
-        }
-        System.out.println("Number of running dogs is " + counterRun);
+
+    public Dog(String name, int lengthRun, int lengthSwim) {
+        name = this.name;
+        lengthRun = this.lengthRun;
+        lengthSwim = this.lengthSwim;
     }
 
-    //@Override, без коммента почему то не работает, Идея пишет, что этот метод не переопределяет метод из суперкласса
-    protected static void animalSwim(String name, int length) {
-        if (boarderToSwim > length) {
-            System.out.println(name + " swam " + length + "m");
-            counterSwim++;
+
+    @Override
+    protected  void animalRun(String dogsName, int dogsDistance) {
+        if (dogsDistance < boarderToRun) {
+            System.out.println( dogsName + " ran " + dogsDistance + "m");
+            counterRun = counterRun + 1;
+            System.out.println("The number of running dogs is " + counterSwim);
         }
-        else {
-            System.out.println("It is very big distance, make it shorter.");
+        else System.out.println("It is very big distance.");
+    }
+
+    @Override
+    protected  void animalSwim(String dogsName, int dogsDistance) {
+        if (dogsDistance < boarderToSwim) {
+            System.out.println(dogsName + " ran " + dogsDistance + "m");
+            counterSwim = counterSwim + 1;
+            System.out.println("The number of swimming dogs is " + counterSwim);
         }
-        System.out.println("Number of swimming dogs is " + counterSwim);
     }
 }
