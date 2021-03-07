@@ -20,12 +20,12 @@ package ru.geekbrains.participants;
 import java.util.*;
 
 public class MainApp {
-    static boolean flag;
+    static boolean flag = true;
     public static void main(String[] args) {
         PhoneBook e = new PhoneBook();
         e.enterValues();
         Scanner sc = new Scanner(System.in);
-        while(true) {
+        while(flag) {
             e.add();
             e.getValue();
             System.out.println("If you want to continue enter <true>, else enter <false>");
