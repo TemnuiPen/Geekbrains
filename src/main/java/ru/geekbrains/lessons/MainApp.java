@@ -2,14 +2,15 @@ package ru.geekbrains.lessons;
 
 /*
 Практическое задание №12
-Необходимо написать два метода, которые делают следующее:
-1) Создают одномерный длинный массив
-2) Заполняют этот массив единицами.
-3) Засекают время выполнения: long a = System.currentTimeMillis().
-4) Проходят по всему массиву и для каждой ячейки считают новое значение по формуле:
-arr[i] = (float)(arr[i] * Math.sin(0.2f + i / 5) * Math.cos(0.2f + i / 5) * Math.cos(0.4f + i / 2));
-5) Проверяется время окончания метода System.currentTimeMillis().
-6) В консоль выводится время работы: System.out.println(System.currentTimeMillis() - a).
+Все участники должны стартовать одновременно, несмотря на разное время  подготовки. В тоннель не может одновременно
+заехать больше половины участников (условность).
+Попробуйте все это синхронизировать.
+Первый участник, пересекший финишную черту, объявляется победителем (в момент пересечения этой самой черты).
+Победитель должен быть только один (ситуация с 0 или 2+ победителями недопустима).
+Когда все завершат гонку, нужно выдать объявление об окончании.
+Можно корректировать классы (в том числе конструктор машин) и добавлять объекты классов из пакета java.util.concurrent.
+
+
 
 Отличие первого метода от второго:
 Первый просто бежит по массиву и вычисляет значения.
@@ -26,133 +27,18 @@ System.arraycopy(a2, 0, arr, h, h).
 * */
 
 public class MainApp{
-
-    private static final int MASSIVE_SIZE = 20;
-    private static final int HALF_OF_MASSIVE_SIZE = 10;
-
-    private static final double [] array = new double[MASSIVE_SIZE]; // основной массив
-    // сюда присваивается первая половина основного массива
-    private final double [] array1 = new double[HALF_OF_MASSIVE_SIZE];
-    private final double [] array2 = new double[MASSIVE_SIZE];// сюда присваевается вторая половина основоного массива
-
-    // Флаги, проверяюшие выполнение функций
-    private boolean firstArrayFlag = false;
-    private boolean secondArrayFlag = false;
-    private boolean firstMethodFlag = false;
-
-    private final Object lock = new Object(); // замок
-
-    public MainApp() {
-        //empty
-    }
+    public static final int CARS_COUNT = 4;
     public static void main(String[] args) {
-        MainApp a = new MainApp();
-
-        Thread t1 = new Thread(() -> {
-            a.countFirstArray();
-        });
-        Thread t2 = new Thread(() -> {
-            a.countSecondArray();
-        });
-
-        Thread t4 = new Thread(() -> {
-            a.sendToArrayValue();
-        });
-        t1.start();
-        t2.start();
-        t4.start();
-
-    }
-
-    private void sendToArrayValue() {
-        synchronized (lock) {
-            long timeToDo = System.currentTimeMillis();
-            for (double i = 0; i < MASSIVE_SIZE; i++) {
-                array[(int) i] = i * Math.sin(0.2 + i / 5) * Math.cos(0.2 + i / 5) * Math.cos(0.4 + i / 2);
-                System.out.println(array[(int) i]);
-            }
-
-            long finalTimeToDo = System.currentTimeMillis();
-            firstMethodFlag = true;
-
-            sendToArrayNewValues();
-
-            System.out.println(timeToDo);
-            System.out.println(finalTimeToDo);
-            System.out.println("Время выполнения первого метода: ");
-            System.out.println(finalTimeToDo - timeToDo);
-            System.out.println("__________________________________");
-
-            if (firstMethodFlag) {
-                lock.notifyAll();
-            }
+        System.out.println("ВАЖНОЕ ОБЪЯВЛЕНИЕ >>> Подготовка!!!");
+        Race race = new Race(new Road(60), new Tunnel(), new Road(40));
+        Car[] cars = new Car[CARS_COUNT];
+        for (int i = 0; i < cars.length; i++) {
+            cars[i] = new Car(race, 20 + (int) (Math.random() * 10));
         }
-    }
-    // Массив array разбивается на два массива array1 и array2
-    private void sendToArrayNewValues() {
-        System.arraycopy(array, 0, array1, 0, HALF_OF_MASSIVE_SIZE);
-        System.arraycopy(array, HALF_OF_MASSIVE_SIZE, array2, HALF_OF_MASSIVE_SIZE, HALF_OF_MASSIVE_SIZE);
-    }
-
-    // рассчитывается array1 и присваевается в основной массив
-    private void countFirstArray() {
-        synchronized (lock) {
-            try {
-                while (!firstMethodFlag) {
-                    lock.wait();
-                }
-
-                for (int i = 0; i < HALF_OF_MASSIVE_SIZE; i++) {
-                    array1[i] = i;
-                    System.out.println("Tread-1 " + i + ": " + array1[i]);
-                }
-
-                System.arraycopy(array1, 0, array,0,HALF_OF_MASSIVE_SIZE);
-                firstArrayFlag = true;
-
-                // Если оба метода выполнены, массив печатается
-                if((firstArrayFlag && secondArrayFlag)) {
-                    printArray();
-                }
-            }
-            catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+        for (int i = 0; i < cars.length; i++) {
+            new Thread(cars[i]).start();
         }
-    }
-
-    // рассчитывается array2 и присваевается в основной массив
-    private void countSecondArray() {
-         synchronized(lock) {
-             try {
-                 while (!firstMethodFlag) {
-                     lock.wait();
-                 }
-
-                 for (int i = HALF_OF_MASSIVE_SIZE; i < MASSIVE_SIZE; i++) {
-                     array2[i] = i;
-                     System.out.println("Tread-2 " + i + ": " + array2[i]);
-                 }
-
-                 System.arraycopy(array2, HALF_OF_MASSIVE_SIZE, array, HALF_OF_MASSIVE_SIZE, HALF_OF_MASSIVE_SIZE);
-
-                 secondArrayFlag = true;
-
-                 // Если оба метода выполнены, массив печатается
-                 if((firstArrayFlag && secondArrayFlag)) {
-                     printArray();
-                 }
-             }
-             catch (InterruptedException e) {
-                 e.printStackTrace();
-             }
-         }
-    }
-
-    //печатается основной массив
-    private void printArray() {
-        for (int i = 0; i < MASSIVE_SIZE; i++) {
-            System.out.println(i + ": " + array[i]);
-        }
+        System.out.println("ВАЖНОЕ ОБЪЯВЛЕНИЕ >>> Гонка началась!!!");
+        System.out.println("ВАЖНОЕ ОБЪЯВЛЕНИЕ >>> Гонка закончилась!!!");
     }
 }
